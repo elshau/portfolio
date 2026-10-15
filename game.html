@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Доверься глазомеру</title>
+
+  <style>
+
+    :root {
+      --bg: #f5f4f0;
+      --surface: #ffffff;
+      --text: #20201e;
+      --muted: #898982;
+      --accent: #c6f36a;
+      --border: #e7e6e0;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      padding: 32px 24px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Montserrat';
+    }
+
+    button {
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .app {
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+ 
+
+    .edition {
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .intro {
+      padding: 48px 0 28px;
+    }
+
+    .eyebrow {
+      margin-bottom: 12px;
+      color: #77776e;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+    }
+
+    h1 {
+      font-size: clamp(36px, 6vw, 64px);
+      font-weight: 800;
+      letter-spacing: -3px;
+      line-height: 1.04;
+    }
+
+    h1 span {
+      color: #8aaa45;
+    }
+
+    .description {
+      max-width: 480px;
+      margin-top: 16px;
+      color: #77776e;
+      font-size: 14px;
+      line-height: 1.8;
+    }
+
+    .dashboard {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+      margin: 20px 0;
+    }
+
+    .stat {
+      padding: 20px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: var(--surface);
+    }
+
+    .stat-label {
+      color: var(--muted);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .stat-value {
+      margin-top: 10px;
+      font-size: 30px;
+      font-weight: 800;
+      letter-spacing: -1.5px;
+    }
+
+    .stat-value small {
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0;
+    }
+
+    .game-card {
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      background: var(--surface);
+    }
+
+    .game-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .game-title {
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .round-label {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .progress-track {
+      height: 3px;
+      background: #efeee8;
+    }
+
+    .progress-bar {
+      width: 0%;
+      height: 100%;
+      background: #9dc94e;
+      transition: width 0.3s ease;
+    }
+
+    .arena-wrap {
+      padding: 24px;
+    }
+
+    .arena {
+      position: relative;
+      display: grid;
+      place-items: center;
+      width: 100%;
+      height: clamp(260px, 45vw, 410px);
+      overflow: hidden;
+      border: 1px solid #e9e8e2;
+      border-radius: 12px;
+      background-color: #fafaf7;
+      background-image: radial-gradient(#deded5 0.8px, transparent 0.8px);
+      background-size: 18px 18px;
+      cursor: crosshair;
+      touch-action: manipulation;
+      user-select: none;
+      transition: height 0.25s ease, background-size 0.25s ease, border-radius 0.25s ease;
+    }
+
+    .target {
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+
+    .target::before,
+    .target::after {
+      content: "";
+      position: absolute;
+      background: #a6d64e;
+    }
+
+    .target::before {
+      top: 50%;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      transform: translateY(-50%);
+    }
+
+    .target::after {
+      top: 0;
+      left: 50%;
+      width: 2px;
+      height: 100%;
+      transform: translateX(-50%);
+    }
+
+    .target-dot {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 5px;
+      height: 5px;
+      border: 1px solid #729b2d;
+      border-radius: 50%;
+      background: #fafaf7;
+      transform: translate(-50%, -50%);
+    }
+
+    .click-marker {
+      position: absolute;
+      width: 13px;
+      height: 13px;
+      border: 2px solid #272722;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      animation: pop 0.2s ease-out;
+    }
+
+    @keyframes pop {
+      from { opacity: 0; scale: 0.5; }
+      to { opacity: 1; scale: 1; }
+    }
+
+    .arena-message {
+      position: absolute;
+      bottom: 16px;
+      left: 50%;
+      color: #aaa99f;
+      font-size: 10px;
+      letter-spacing: 1px;
+      transform: translateX(-50%);
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    .feedback {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      min-height: 64px;
+      padding: 16px 2px 0;
+    }
+
+    .feedback-title {
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .feedback-subtitle {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .accuracy {
+      text-align: right;
+    }
+
+    .accuracy-value {
+      font-size: 22px;
+      font-weight: 500;
+    }
+
+    .accuracy-label {
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 10px;
+    }
+
+    .bottom-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .hint {
+      max-width: 420px;
+      color: #88887f;
+      font-size: 11px;
+      line-height: 1.7;
+    }
+
+    .btn {
+      padding: 13px 20px;
+      border: 0;
+      border-radius: 10px;
+      background: var(--text);
+      color: white;
+      font-size: 12px;
+      font-weight: 700;
+      transition: transform 0.15s, background 0.15s;
+    }
+
+    .btn:hover {
+      background: #3d3d36;
+      transform: translateY(-1px);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn:disabled {
+      background: #d4d4cd;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .result {
+      padding: 36px 24px;
+      text-align: center;
+    }
+
+    .result h2 {
+      font-size: clamp(28px, 5vw, 42px);
+      font-weight: 800;
+      letter-spacing: -2px;
+    }
+
+    .result p {
+      max-width: 400px;
+      margin: 12px auto 24px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.8;
+    }
+
+    .result-score {
+      margin-bottom: 24px;
+      font-size: 42px;
+    }
+
+    .result-score small {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 28px;
+      color: #aaa99f;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    @media (max-width: 560px) {
+      body {
+        padding: 20px 14px;
+      }
+
+      .intro {
+        padding-top: 36px;
+      }
+
+      h1 {
+        letter-spacing: -2px;
+      }
+
+      .dashboard {
+        gap: 8px;
+      }
+
+      .stat {
+        padding: 14px 12px;
+      }
+
+      .stat-value {
+        font-size: 24px;
+      }
+
+      .game-top {
+        padding: 16px;
+      }
+
+      .arena-wrap {
+        padding: 12px;
+      }
+
+      .bottom-row {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .bottom-row .btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="app">
+
+    <section class="intro">
+      <h1>Доверяй своему<br><span>глазомеру</span></h1>
+      <p class="description">
+        Найди геометрический центр и проверь свою точность.
+      </p>
+    </section>
+
+    <section class="dashboard">
+      <div class="stat">
+        <div class="stat-label">Счет</div>
+        <div class="stat-value" id="score">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Уровень</div>
+        <div class="stat-value">
+          <span id="round">1</span><small> / 10</small>
+        </div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Лучший счет</div>
+        <div class="stat-value" id="best">0</div>
+      </div>
+    </section>
+
+    <section class="game-card">
+      <div class="game-top">
+        <div class="game-title" id="gameTitle">Найди центр</div>
+        <div class="round-label" id="roundCode">УРОВЕНЬ_01</div>
+      </div>
+
+      <div class="progress-track">
+        <div class="progress-bar" id="progress"></div>
+      </div>
+
+      <div id="gameScreen">
+        <div class="arena-wrap">
+          <div class="arena" id="arena" role="button"
+               aria-label="Нажми в центр поля">
+            <div class="target" id="target">
+              <div class="target-dot"></div>
+            </div>
+            <div class="arena-message">Нажми на центр</div>
+          </div>
+
+          <div class="feedback">
+            <div>
+              <div class="feedback-title" id="feedbackTitle">
+                Начни, когда будешь готов
+              </div>
+              <div class="feedback-subtitle" id="feedbackSubtitle">
+                Нажми в центр поля, чтобы начать.
+              </div>
+            </div>
+            <div class="accuracy">
+              <div class="accuracy-value" id="accuracy">— px</div>
+              <div class="accuracy-label">РАССТОЯНИЕ ДО ЦЕНТРА</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="resultScreen" class="result hidden">
+        <h2 id="resultTitle">Центр найден!</h2>
+        <p id="resultDescription"></p>
+        <div class="result-score">
+          <span id="finalScore">0</span><small> / 1000 очков</small>
+        </div>
+        <button class="btn" id="restartButton">Играть снова ↗</button>
+      </div>
+    </section>
+
+    <div class="bottom-row" id="controls">
+      <button class="btn" id="nextButton" disabled>
+        Следующий уровень →
+      </button>
+    </div>
+  </main>
+
+  <script>
+    const TOTAL_ROUNDS = 10;
+    const MAX_POINTS_PER_ROUND = 100;
+
+    const arena = document.getElementById("arena");
+    const target = document.getElementById("target");
+    const scoreElement = document.getElementById("score");
+    const roundElement = document.getElementById("round");
+    const bestElement = document.getElementById("best");
+    const progressElement = document.getElementById("progress");
+    const accuracyElement = document.getElementById("accuracy");
+    const feedbackTitle = document.getElementById("feedbackTitle");
+    const feedbackSubtitle = document.getElementById("feedbackSubtitle");
+    const nextButton = document.getElementById("nextButton");
+    const gameScreen = document.getElementById("gameScreen");
+    const resultScreen = document.getElementById("resultScreen");
+    const controls = document.getElementById("controls");
+
+    let round = 1;
+    let score = 0;
+    let roundPlayed = false;
+    let gameOver = false;
+
+    let best = Number(localStorage.getItem("pixelPerfectBest")) || 0;
+    bestElement.textContent = best;
+
+    function getCenter() {
+      const rect = arena.getBoundingClientRect();
+
+      return {
+        x: rect.width / 2,
+        y: rect.height / 2
+      };
+    }
+
+    function setupRound() {
+      roundPlayed = false;
+
+      roundElement.textContent = round;
+      document.getElementById("roundCode").textContent =
+        `УРОВЕНЬ_${String(round).padStart(2, "0")}`;
+
+      progressElement.style.width =
+        `${((round - 1) / TOTAL_ROUNDS) * 100}%`;
+
+      target.style.left = "50%";
+      target.style.top = "50%";
+      target.classList.add("hidden");
+
+      // На каждом уровне меняются размер поля и плотность сетки.
+      const heights = [410, 390, 370, 350, 330, 315, 300, 285, 270, 260];
+      const gridSizes = [18, 20, 22, 24, 26, 28, 30, 32, 34, 36];
+      const responsiveHeight = Math.max(260, Math.min(heights[round - 1], window.innerWidth * 0.45));
+      arena.style.height = `${responsiveHeight}px`;
+      arena.style.backgroundSize = `${gridSizes[round - 1]}px ${gridSizes[round - 1]}px`;
+      arena.style.borderRadius = `${Math.max(6, 12 - Math.floor((round - 1) / 3))}px`; 
+
+      arena.querySelectorAll(".click-marker, svg").forEach(marker => {
+        marker.remove();
+      });
+
+      accuracyElement.textContent = "— пикс.";
+      feedbackTitle.textContent = "Готов? Начинаем!";
+      feedbackSubtitle.textContent = "Нажми в центр поля, чтобы начать.";
+
+      nextButton.disabled = true;
+      nextButton.textContent =
+        round === TOTAL_ROUNDS ? "Посмотреть результат →" : "Следующий уровень →";
+
+      document.getElementById("gameTitle").textContent = `Найди центр · уровень ${round}`;
+    }
+
+    function getFeedback(distance) {
+      if (distance < 3) {
+        return {
+          title: "Идеально! ✳",
+          subtitle: "Практически идеальное попадание."
+        };
+      }
+
+      if (distance < 10) {
+        return {
+          title: "Почти идеально!",
+          subtitle: "Отличная работа. Ты чувствуешь геометрию."
+        };
+      }
+
+      if (distance < 25) {
+        return {
+          title: "Очень близко!",
+          subtitle: "Неплохо. Попробуй быть ещё точнее."
+        };
+      }
+
+      if (distance < 60) {
+        return {
+          title: "Немного мимо.",
+          subtitle: "Обрати внимание на расстояние до краёв."
+        };
+      }
+
+      return {
+        title: "Продолжай тренироваться!",
+        subtitle: "Следующий раунд — новый шанс."
+      };
+    }
+
+    function handleClick(event) {
+      if (roundPlayed || gameOver) return;
+
+      const rect = arena.getBoundingClientRect();
+      const clickX = event.clientX - rect.left;
+      const clickY = event.clientY - rect.top;
+
+      const center = getCenter();
+      const dx = clickX - center.x;
+      const dy = clickY - center.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      // Чем ближе к центру, тем больше очков.
+      // 100 очков за идеальный центр, минимум 0.
+      const points = Math.max(
+        0,
+        Math.round(MAX_POINTS_PER_ROUND * (1 - distance / 150))
+      );
+
+      score += points;
+      roundPlayed = true;
+
+      scoreElement.textContent = score;
+      accuracyElement.textContent = `${distance.toFixed(1)} пикс.`;
+
+      const feedback = getFeedback(distance);
+      feedbackTitle.textContent = feedback.title;
+      feedbackSubtitle.textContent = `+${points} очков · ${feedback.subtitle}`;
+
+      // Показываем место клика.
+      const marker = document.createElement("div");
+      marker.className = "click-marker";
+      marker.style.left = `${clickX}px`;
+      marker.style.top = `${clickY}px`;
+      arena.appendChild(marker);
+
+      // Показываем точное расстояние от центра до клика.
+      const line = document.createElementNS(
+        "http://www.w3.org/2000/svg", "svg"
+      );
+      line.setAttribute("width", "100%");
+      line.setAttribute("height", "100%");
+      line.style.position = "absolute";
+      line.style.inset = "0";
+      line.style.pointerEvents = "none";
+      line.innerHTML = `
+        <line
+          x1="${center.x}" y1="${center.y}"
+          x2="${clickX}" y2="${clickY}"
+          stroke="#a6d64e"
+          stroke-width="1.5"
+          stroke-dasharray="4 4"
+        />
+      `;
+      arena.appendChild(line);
+
+      nextButton.disabled = false;
+      progressElement.style.width =
+        `${(round / TOTAL_ROUNDS) * 100}%`;
+
+      document.getElementById("gameTitle").textContent = "Уровень пройден";
+      target.classList.remove("hidden");
+    }
+
+    function nextRound() {
+      if (!roundPlayed) return;
+
+      if (round >= TOTAL_ROUNDS) {
+        finishGame();
+        return;
+      }
+
+      round++;
+      setupRound();
+    }
+
+    function finishGame() {
+      gameOver = true;
+
+      if (score > best) {
+        best = score;
+        localStorage.setItem("pixelPerfectBest", best);
+        bestElement.textContent = best;
+      }
+
+      gameScreen.classList.add("hidden");
+      controls.classList.add("hidden");
+      resultScreen.classList.remove("hidden");
+      progressElement.style.width = "100%";
+
+      document.getElementById("finalScore").textContent = score;
+
+      let title = "Хороший глазомер!";
+      let description =
+        "Ты завершил все 10 раундов. Повтори игру и попробуй улучшить результат.";
+      let icon = "✳";
+
+      if (score >= 900) {
+        title = "Идеальная точность!";
+        description =
+          "Потрясающая точность. У тебя действительно хороший глазомер и чувство пространства.";
+        icon = "✦";
+      } else if (score >= 700) {
+        title = "Отличный глазомер!";
+        description =
+          "Очень хороший результат. Ты замечаешь пропорции и хорошо чувствуешь центр.";
+        icon = "✳";
+      } else if (score < 400) {
+        title = "Практика ведёт к успеху!";
+        description =
+          "Точность развивается с практикой. Сыграй ещё раз и попробуй смотреть на отступы от краёв.";
+        icon = "↗";
+      }
+
+      document.getElementById("resultTitle").textContent = title;
+      document.getElementById("resultDescription").textContent = description;
+      document.getElementById("resultIcon").textContent = icon;
+    }
+
+    function restartGame() {
+      round = 1;
+      score = 0;
+      roundPlayed = false;
+      gameOver = false;
+
+      scoreElement.textContent = "0";
+      gameScreen.classList.remove("hidden");
+      controls.classList.remove("hidden");
+      resultScreen.classList.add("hidden");
+
+      setupRound();
+    }
+
+    arena.addEventListener("click", handleClick);
+    nextButton.addEventListener("click", nextRound);
+    document.getElementById("restartButton").addEventListener(
+      "click", restartGame
+    );
+
+    setupRound();
+  </script>
+</body>
+</html>

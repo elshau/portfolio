@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Color Mixer</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 40px 20px;
+      background: #f5f5f2;
+      color: #252525;
+      font-family: Arial, sans-serif;
+    }
+
+    .app {
+      max-width: 420px;
+      margin: 20px auto;
+    }
+
+    h1 {
+      margin-bottom: 8px;
+      font-size: 32px;
+    }
+
+    .description {
+      margin-bottom: 28px;
+      color: #777;
+      font-size: 14px;
+    }
+
+    .preview {
+      height: 200px;
+      margin-bottom: 20px;
+      border-radius: 16px;
+      background: rgb(180, 140, 220);
+      transition: background 0.15s;
+    }
+
+    .hex-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 30px;
+      padding: 16px;
+      border: 1px solid #e5e5e0;
+      border-radius: 12px;
+      background: white;
+    }
+
+    #hex {
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    button {
+      padding: 10px 14px;
+      border: none;
+      border-radius: 8px;
+      background: #252525;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #444;
+    }
+
+    .slider-group {
+      margin-bottom: 24px;
+    }
+
+    .slider-label {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      font-size: 14px;
+    }
+
+    .slider-label span:last-child {
+      color: #777;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      cursor: pointer;
+    }
+
+    #message {
+      min-height: 18px;
+      margin-top: 16px;
+      color: #777;
+      font-size: 13px;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="app">
+    <h1>Color Mixer</h1>
+    <p class="description">
+      Подбери свой цвет с помощью RGB-ползунков.
+    </p>
+
+    <div class="preview" id="preview"></div>
+
+    <div class="hex-row">
+      <span id="hex">#B48CDC</span>
+      <button id="copy">Ккопировать HEX</button>
+    </div>
+
+    <div class="slider-group">
+      <div class="slider-label">
+        <label for="red">Красный</label>
+        <span id="redValue">180</span>
+      </div>
+      <input id="red" type="range" min="0" max="255" value="180">
+    </div>
+
+    <div class="slider-group">
+      <div class="slider-label">
+        <label for="green">Зеленый</label>
+        <span id="greenValue">140</span>
+      </div>
+      <input id="green" type="range" min="0" max="255" value="140">
+    </div>
+
+    <div class="slider-group">
+      <div class="slider-label">
+        <label for="blue">Синий</label>
+        <span id="blueValue">220</span>
+      </div>
+      <input id="blue" type="range" min="0" max="255" value="220">
+    </div>
+
+    <button id="reset">Сброс</button>
+    <p id="message"></p>
+  </main>
+
+  <script>
+    const red = document.getElementById("red");
+    const green = document.getElementById("green");
+    const blue = document.getElementById("blue");
+
+    const preview = document.getElementById("preview");
+    const hex = document.getElementById("hex");
+    const message = document.getElementById("message");
+
+    function updateColor() {
+      const r = Number(red.value);
+      const g = Number(green.value);
+      const b = Number(blue.value);
+
+      const color = `rgb(${r}, ${g}, ${b})`;
+
+      preview.style.backgroundColor = color;
+
+      document.getElementById("redValue").textContent = r;
+      document.getElementById("greenValue").textContent = g;
+      document.getElementById("blueValue").textContent = b;
+
+      const toHex = value =>
+        value.toString(16).padStart(2, "0");
+
+      hex.textContent =
+        "#" + toHex(r) + toHex(g) + toHex(b);
+
+      message.textContent = "";
+    }
+
+    red.addEventListener("input", updateColor);
+    green.addEventListener("input", updateColor);
+    blue.addEventListener("input", updateColor);
+
+    document.getElementById("copy").addEventListener(
+      "click",
+      async () => {
+        try {
+          await navigator.clipboard.writeText(hex.textContent);
+          message.textContent = "HEX-код скопирован!";
+        } catch {
+          message.textContent =
+            "Не удалось скопировать. Выдели код вручную.";
+        }
+      }
+    );
+
+    document.getElementById("reset").addEventListener(
+      "click",
+      () => {
+        red.value = 180;
+        green.value = 140;
+        blue.value = 220;
+        updateColor();
+        message.textContent = "Цвет сброшен.";
+      }
+    );
+
+    updateColor();
+  </script>
+</body>
+</html>
